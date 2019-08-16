@@ -5,6 +5,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -13,12 +18,12 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import junit.framework.TestCase;
 
 public class TaxCreditCoTest extends TestCase {
-	private WebDriver driver;
-
-	@org.junit.Test
-	public void testGoogleSearch() throws IOException {
+	@Test
+	public void testBulkInput() throws IOException {
 		ArrayList<Contact> contacts = new ArrayList<Contact>();
-
+		System.setProperty("webdriver.chrome.driver", "C:\\Windows\\System32\\chromedriver.exe");
+		WebDriver driver = new ChromeDriver();
+		
 		String csvFile = "contacts.csv";
 		String line = "";
 		String cvsSplitBy = ",";
@@ -31,10 +36,6 @@ public class TaxCreditCoTest extends TestCase {
 			if (lineNum++ != 0)
 				contacts.add(new Contact(temp[0],temp[1],temp[2],temp[3],temp[4],temp[5],temp[6],temp[7],temp[8]));
 		}
-
-		System.setProperty("webdriver.chrome.driver", "C:\\Windows\\System32\\chromedriver.exe");
-		driver = new ChromeDriver();
-
 
 		for (Contact contact : contacts) {
 			driver.get("http://taxcreditco.com");
@@ -65,6 +66,33 @@ public class TaxCreditCoTest extends TestCase {
 		}
 		
 
+		driver.quit();
+	}
+	
+
+	@Test
+	public void testMissingEmailTriggersMessage() {
+		System.setProperty("webdriver.chrome.driver", "C:\\Windows\\System32\\chromedriver.exe");
+		WebDriver driver = new ChromeDriver();
+		
+		driver.get("http://taxcreditco.com");
+
+		WebElement contactLink = driver.findElement(By.xpath("//*[@id=\"menu-item-369\"]/div/a"));
+		contactLink.click();
+		assertEquals("Contact TCC | TCC", driver.getTitle());
+		
+		WebElement firstname = driver.findElement(By.name("firstname"));
+		firstname.sendKeys("test");
+		
+		WebElement company = driver.findElement(By.name("company"));
+		company.sendKeys("test");
+		
+		WebElement submit = driver.findElement(By.xpath("//*[@id=\"hsForm_3a877d85-0e59-43b4-9079-9eb8b5306c04\"]/div[9]/div[2]/input"));
+		submit.click();
+		
+		WebElement errorMessage = driver.findElement(By.xpath("//*[@id=\"hsForm_3a877d85-0e59-43b4-9079-9eb8b5306c04\"]/div[9]/ul/li/label"));
+		assertEquals(errorMessage.getText(), "Please complete all required fields.");
+		
 		driver.quit();
 	}
 }
